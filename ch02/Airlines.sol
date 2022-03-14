@@ -19,11 +19,11 @@ contract Airlines {
     }
 
     modifier onlyMember {
-        require(msg.sender == 1);
+        require(membership[msg.sender] == 1);
         _;
     }
 
-    constructor () public payable {
+    constructor() payable {
         chairperson = msg.sender;
         membership[msg.sender] = 1;
         balanceDetails[msg.sender].escrow = msg.value;
