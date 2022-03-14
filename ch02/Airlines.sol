@@ -22,4 +22,10 @@ contract Airlines {
         require(msg.sender == 1);
         _;
     }
+
+    constructor () public payable {
+        chairperson = msg.sender;
+        membership[msg.sender] = 1;
+        balanceDetails[msg.sender].escrow = msg.value;
+    }
 }
