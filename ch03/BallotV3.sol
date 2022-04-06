@@ -35,7 +35,6 @@ contract BallotV3 {
         for (uint prop = 0; prop < numProposals; prop++) {
             proposals.push(Proposal(0));
         }
-
         state = Phase.Regs;
     }
 
@@ -46,7 +45,6 @@ contract BallotV3 {
         if (x < State) {
             revert();
         }
-
         state = x;
     }
 
@@ -54,10 +52,10 @@ contract BallotV3 {
         if (msg.sender != chairperson || voters[voter].voted) {
             revert();
         }
+        voters[voter].weight = 1;
     }
 
     function vote(uint toProposal) public validPhase(Phase.Vote) {
-
         Voter memory sender = voters[msg.sender];
         if (sender.voted || toProposal >= proposals.length) {
             revert();
