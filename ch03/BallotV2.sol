@@ -23,7 +23,7 @@ contract BallotV2 {
 
     Phase public state = Phase.Init;
 
-    constructor(uint numProposals) public {
+    constructor(uint numProposals) {
         chairperson = msg.sender;
         voters[chairperson].weight = 2;
 

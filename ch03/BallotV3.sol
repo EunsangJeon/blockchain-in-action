@@ -28,7 +28,7 @@ contract BallotV3 {
         _;
     }
 
-    constructor(uint numProposals) public {
+    constructor(uint numProposals) {
         chairperson = msg.sender;
         voters[chairperson].weight = 2;
 
