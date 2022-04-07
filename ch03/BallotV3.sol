@@ -42,7 +42,7 @@ contract BallotV3 {
         if (msg.sender != chairperson) {
             revert();
         }
-        if (x < State) {
+        if (x < state) {
             revert();
         }
         state = x;
