@@ -4,7 +4,7 @@
   "author": "eunsang",
   "license": "ISC",
   "devDependencies": {
-    "solc": "^0.5.17",
-    "truffle": "^5.5.9"
+    "solc": "^0.5.16",
+    "truffle": "^5.1.14"
   }
 }

@@ -27,7 +27,7 @@ contract Ballot {
         _;
     }
 
-    constructor (uint numProposals) {
+    constructor (uint numProposals) public {
         chairperson = msg.sender;
         voters[chairperson].weight = 2;
         for (uint prop = 0; prop < numProposals; prop ++) {
@@ -42,7 +42,7 @@ contract Ballot {
     }
 
 
-    function vote(uint toProposal) public validVoter{
+    function vote(uint toProposal) public validVoter {
         Voter memory sender = voters[msg.sender];
 
         require (!sender.voted);
