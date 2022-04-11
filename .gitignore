@@ -1,2 +1,6 @@
+# Intellij
 .idea
+# npm package installation
 node_modules
+# build
+build

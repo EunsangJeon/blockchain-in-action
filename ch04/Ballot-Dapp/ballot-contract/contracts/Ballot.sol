@@ -1,4 +1,5 @@
-pragma solidity >=0.4.22 <=0.6.0;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.0;
 
 contract Ballot {
 
@@ -26,7 +27,7 @@ contract Ballot {
         _;
     }
 
-    constructor (uint numProposals) public {
+    constructor (uint numProposals) {
         chairperson = msg.sender;
         voters[chairperson].weight = 2;
         for (uint prop = 0; prop < numProposals; prop ++) {
