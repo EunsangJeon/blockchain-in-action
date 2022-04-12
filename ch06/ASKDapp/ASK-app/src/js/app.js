@@ -118,7 +118,7 @@ App = {
         App.contracts.vote
             .deployed()
             .then(function (instance) {
-                return instance.register({value: web3.toWei(deposit, "ether")});
+                return instance.register({from: App.currentAccount, value: web3.toWei(deposit, "ether")});
             })
             .then(function (result) {
                 // console.log(result);
@@ -142,7 +142,7 @@ App = {
         App.contracts.vote
             .deployed()
             .then(function (instance) {
-                return instance.unregister(airlineAddress);
+                return instance.unregister(airlineAddress, {from: App.currentAccount});
             })
             .then(function (result) {
                 console.log(result);
@@ -170,7 +170,7 @@ App = {
         App.contracts.vote
             .deployed()
             .then(function (instance) {
-                return instance.ASKrequest(reqId, flightId, nSeats, psngrId, toAirline);
+                return instance.ASKrequest(reqId, flightId, nSeats, psngrId, toAirline, {from: App.currentAccount});
             })
             .then(function (result) {
                 // console.log(result);
@@ -198,7 +198,7 @@ App = {
         App.contracts.vote
             .deployed()
             .then(function (instance) {
-                return instance.ASKresponse(reqId, success, fromAirline);
+                return instance.ASKresponse(reqId, success, fromAirline, {from: App.currentAccount});
             })
             .then(function (result) {
                 // console.log(result);
@@ -227,7 +227,7 @@ App = {
         App.contracts.vote
             .deployed()
             .then(function (instance) {
-                return instance.settlePayment(reqId, toAirline, nSeats);
+                return instance.settlePayment(reqId, toAirline, nSeats, {from: App.currentAccount});
             })
             .then(function (result) {
                 // console.log(result);
@@ -257,7 +257,7 @@ App = {
         App.contracts.vote
             .deployed()
             .then(function (instance) {
-                return instance.replenishEscrow({value: web3.toWei(amount, "ether")});
+                return instance.replenishEscrow({from: App.currentAccount ,value: web3.toWei(amount, "ether")});
             })
             .then(function (result) {
                 // console.log(result);

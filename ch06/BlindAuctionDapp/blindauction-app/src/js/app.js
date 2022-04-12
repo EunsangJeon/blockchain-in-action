@@ -68,7 +68,7 @@ App = {
     new Web3(new Web3.providers.HttpProvider(App.url)).eth.getAccounts((err, accounts) => {
       jQuery.each(accounts, function (i) {
         if (web3.eth.coinbase !== accounts[i]) {
-          var optionElement = '<option value="' + accounts[i] + '">' + accounts[i] + '</option';
+          const optionElement = '<option value="' + accounts[i] + '">' + accounts[i] + '</option';
           jQuery('#enter_address').append(optionElement);
         }
       });
@@ -80,7 +80,7 @@ App = {
       return instance.currentPhase({from: App.currentAccount});
     }).then(function(result) {
       App.currentPhase = result;
-      var notificationText = App.auctionPhases[App.currentPhase];
+      const notificationText = App.auctionPhases[App.currentPhase];
       console.log(App.currentPhase);
       console.log(notificationText);
       $('#phase-notification-text').text(notificationText);
@@ -105,7 +105,7 @@ App = {
     })
   },
 
-  handlePhase: function (event) {
+  handlePhase: function () {
     App.contracts.vote.deployed().then(function (instance) {
       console.log("handlePhase called");
       return instance.advancePhase({from: App.currentAccount});
@@ -126,7 +126,6 @@ App = {
               console.log("This is also working, new phase updated")
               App.currentPhase = result;
             })
-            return;
           }
           else {
             console.log("handle phase error 1");
@@ -145,18 +144,14 @@ App = {
       });
   },
 
-  handleBid: function () {
+  handleBid: function (event) {
     event.preventDefault();
-    var bidValue = $("#bet-value").val();
-    var msgValue = $("#message-value").val();
-    web3.eth.getAccounts(function (error, accounts) {
-      var account = accounts[0];
-
+    const bidValue = $("#bet-value").val();
+    const msgValue = $("#message-value").val();
+    web3.eth.getAccounts(function () {
       App.contracts.vote.deployed().then(function (instance) {
-        bidInstance = instance;
-
-        return bidInstance.bid(bidValue, { from: App.currentAccount, value: web3.toWei(msgValue, "ether") });
-      }).then(function (result, err) {
+        return instance.bid(bidValue, { from: App.currentAccount, value: web3.toWei(msgValue, "ether") });
+      }).then(function (result) {
         if (result) {
           console.log(result.receipt.status);
           if (parseInt(result.receipt.status) === 1)
@@ -166,26 +161,22 @@ App = {
         } else {
           toastr["error"]("Bidding Failed!");
         }
-      }).catch(function (err) {
+      }).catch(function () {
         toastr["error"]("Bidding Failed!");
       });
     });
   },
 
-  handleReveal: function () {
+  handleReveal: function (event) {
     console.log("button clicked");
     event.preventDefault();
-    var bidRevealValue = $("#bet-reveal").val();
+    const bidRevealValue = $("#bet-reveal").val();
     console.log(parseInt(bidRevealValue));
-    var bidRevealSecret = $("#password").val();
-    web3.eth.getAccounts(function (error, accounts) {
-      var account = accounts[0];
-
+    const bidRevealSecret = $("#password").val();
+    web3.eth.getAccounts(function () {
       App.contracts.vote.deployed().then(function (instance) {
-        bidInstance = instance;
-
-        return bidInstance.reveal({from: App.currentAccount}, parseInt(bidRevealValue), bidRevealSecret);
-      }).then(function (result, err) {
+        return instance.reveal(parseInt(bidRevealValue), bidRevealSecret, {from: App.currentAccount});
+      }).then(function (result) {
         if (result) {
           console.log(result.receipt.status);
           if (parseInt(result.receipt.status) === 1)
@@ -195,7 +186,7 @@ App = {
         } else {
           toastr["error"]("Revealing Failed!");
         }
-      }).catch(function (err) {
+      }).catch(function () {
         toastr["error"]("Revealing Failed!");
       });
     });
@@ -204,14 +195,14 @@ App = {
 
   handleWinner: function () {
     console.log("To get winner");
-    var bidInstance;
+    let bidInstance;
     App.contracts.vote.deployed().then(function (instance) {
       bidInstance = instance;
       return bidInstance.auctionEnd({from: App.currentAccount});
     }).then(function (res) {
       console.log(res);
-      var winner = res.logs[0].args.winner;
-      var highestBid = res.logs[0].args.highestBid.toNumber();
+      const winner = res.logs[0].args.winner;
+      const highestBid = res.logs[0].args.highestBid.toNumber();
       toastr.info("Highest bid is " + highestBid + "<br>" + "Winner is " + winner, "", { "iconClass": 'toast-info notification3' });
     }).catch(function (err) {
       console.log(err.message);
@@ -225,11 +216,11 @@ App = {
       App.contracts.vote.deployed().then(function(instance) {
         console.log("Trying to call withdraw with currentAccount: " + App.currentAccount);
         return instance.withdraw({from: App.currentAccount});
-      }).then(function(result, error) {
+      }).then(function(result) {
         if(result.receipt.status) {
           toastr.info('Your bid has been withdrawn');
         }  
-      }).catch(function(error) {
+      }).catch(function(err) {
         console.log(err.message);
         toastr["error"]("Error in withdrawing the bid");
       })
@@ -255,7 +246,7 @@ App = {
 
   //Function to show the notification of auction phases
   showNotification: function (phase) {
-    var notificationText = App.biddingPhases[phase];
+    const notificationText = App.biddingPhases[phase];
     $('#phase-notification-text').text(notificationText.text);
     toastr.info(notificationText.text, "", { "iconClass": 'toast-info notification' + String(notificationText.id) });
   }
