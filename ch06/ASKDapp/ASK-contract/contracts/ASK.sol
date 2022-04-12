@@ -1,105 +1,77 @@
 pragma solidity >=0.4.22 <=0.6.0;
-    
-    contract Airlines  {
-   
+
+contract Airlines {
+
     address chairperson;
-    
-    struct reqStruc{
+
+    struct reqStruc {
         uint reqID;
         uint fID;
         uint numSeats;
         uint passengerID;
         address toAirline;
-    } 
+    }
 
-   struct respStruc{
+    struct respStruc {
         uint reqID;
         bool status;
         address fromAirline;
-    } 
-    
-    mapping (address=>uint) public escrow;
-    mapping (address=>uint) membership; 
-    mapping (address=>reqStruc) reqs;
-    mapping (address=>respStruc) reps;
-    mapping (address=>uint) settledReqID;
-    
-    //modifier or rules
+    }
+
+    mapping(address => uint) public escrow;
+    mapping(address => uint) membership;
+    mapping(address => reqStruc) reqs;
+    mapping(address => respStruc) reps;
+    mapping(address => uint) settledReqID;
+    uint private constant ETH = 1000000000000000000;
+
     modifier onlyChairperson {
-        require(msg.sender==chairperson);
+        require(msg.sender == chairperson);
         _;
     }
+
     modifier onlyMember {
-        require(membership[msg.sender]==1);
+        require(membership[msg.sender] == 1);
         _;
     }
-    
-    // constructor function
-    constructor () public payable  {
-      
-        chairperson=msg.sender;
-        membership[msg.sender]=1; // automatically registered
+
+    constructor () public payable {
+        chairperson = msg.sender;
+        membership[msg.sender] = 1;
         escrow[msg.sender] = msg.value;
-
-        
     }
-    
-    function register ( ) public payable{
-        
-        address AirlineA =msg.sender;
-        membership[AirlineA]=1;
+
+    function register() public payable {
+        address AirlineA = msg.sender;
+        membership[AirlineA] = 1;
         escrow[AirlineA] = msg.value;
-
-        
     }
-        
-   function unregister (address payable AirlineZ) onlyChairperson public {
-        membership[AirlineZ]=0;
-        //return escrow to leaving airline: other consitions may be verified
+
+    function unregister(address payable AirlineZ) onlyChairperson public {
+        membership[AirlineZ] = 0;
         AirlineZ.transfer(escrow[AirlineZ]);
         escrow[AirlineZ] = 0;
-        
     }
-    
-    
-    function ASKrequest (uint reqID, uint flightID, uint numSeats, uint custID, address toAirline) onlyMember public{
-        /*if(membership[toAirline]!=1){
-            revert();}  */
-        require(membership[toAirline] == 1);
+
+
+    function ASKrequest(uint reqID, uint flightID, uint numSeats, uint custID, address toAirline) onlyMember public {
         reqs[msg.sender] = reqStruc(reqID, flightID, numSeats, custID, toAirline);
-      
     }
-    
-    function  ASKresponse (uint reqID, bool success, address fromAirline) onlyMember public{
-      
-        if(membership[fromAirline]!=1){
-            revert();
-        }
-        
-        reps[msg.sender].status=success;
-        reps[msg.sender].fromAirline = fromAirline;
-        reps[msg.sender].reqID = reqID;
-       
-       
+
+    function ASKresponse(uint reqID, bool success, address fromAirline) onlyMember public {
+        reps[msg.sender] = respStruc(reqID, status, fromAirline);
     }
-    
-    function settlePayment  (uint reqID, address payable toAirline, uint numSeats) onlyMember payable public{
-        //before calling this, it will update ASK view table
+
+    function settlePayment(uint reqID, address payable toAirline, uint numSeats) onlyMember payable public {
         address fromAirline = msg.sender;
-       
-        //this is the consortium account transfer you want to do
-         //assume cost of 1 ETH for each seat 
-        // computations are in Wei 
-        
-        escrow[toAirline] = escrow[toAirline] + numSeats*1000000000000000000;
-        escrow[fromAirline] = escrow[fromAirline] - numSeats*1000000000000000000;
-       
+
+        escrow[toAirline] = escrow[toAirline] + numSeats * ETH;
+        escrow[fromAirline] = escrow[fromAirline] - numSeats * ETH;
+
         settledReqID[fromAirline] = reqID;
-       
     }
-    
-    function replenishEscrow() payable public
-    {
+
+    function replenishEscrow() payable public {
         escrow[msg.sender] = escrow[msg.sender] + msg.value;
     }
 }
