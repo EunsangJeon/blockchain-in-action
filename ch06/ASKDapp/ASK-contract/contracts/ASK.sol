@@ -59,7 +59,7 @@ contract Airlines {
     }
 
     function ASKresponse(uint reqID, bool success, address fromAirline) onlyMember public {
-        reps[msg.sender] = respStruc(reqID, status, fromAirline);
+        reps[msg.sender] = respStruc(reqID, success, fromAirline);
     }
 
     function settlePayment(uint reqID, address payable toAirline, uint numSeats) onlyMember payable public {
