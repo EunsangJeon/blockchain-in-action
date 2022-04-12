@@ -1,36 +1,33 @@
 pragma solidity >=0.4.22 <=0.6.0;
 
-
 contract BlindAuction {
     struct Bid {
         bytes32 blindedBid;
         uint deposit;
     }
 
-    // Phases will be set only by external agents and not by time "now"
-    // Enum-uint mapping:
-    // Init - 0; Bidding - 1; Reveal - 2; Done - 3
-    enum Phase {Init, Bidding, Reveal, Done}
-    // Owner
+    enum Phase {
+        Init, Bidding, Reveal, Done
+    }
+
     address payable public beneficiary;
-    // Keep track of the highest bid,bidder
     address public highestBidder;
     uint public highestBid = 0;
-    // Only one bid allowed per address
     mapping(address => Bid) public bids;
     mapping(address => uint) pendingReturns;
-
     Phase public currentPhase = Phase.Init;
-    // Events
+    uint private constant ETH = 1000000000000000000;
+
     event AuctionEnded(address winner, uint highestBid);
     event BiddingStarted();
     event RevealStarted();
     event AuctionInit();
-    // Modifiers
+
     modifier validPhase(Phase phase) {
         require(currentPhase == phase, "phaseError");
         _;
     }
+
     modifier onlyBeneficiary() {
         require(msg.sender == beneficiary, "onlyBeneficiary");
         _;
@@ -38,28 +35,29 @@ contract BlindAuction {
 
     constructor() public {
         beneficiary = msg.sender;
-        // advancePhase();
     }
 
     function advancePhase() public onlyBeneficiary {
-        // If already in done phase, reset to init phase
         if (currentPhase == Phase.Done) {
             currentPhase = Phase.Init;
         } else {
-            // else, increment the phase
-            // Conversion to uint needed as enums are internally uints
             uint nextPhase = uint(currentPhase) + 1;
             currentPhase = Phase(nextPhase);
         }
 
-        // Emit appropriate events for the new phase
-        if (currentPhase == Phase.Reveal) emit RevealStarted();
-        if (currentPhase == Phase.Bidding) emit BiddingStarted();
-        if (currentPhase == Phase.Init) emit AuctionInit();
+        if (currentPhase == Phase.Reveal) {
+            emit RevealStarted();
+        }
+        if (currentPhase == Phase.Bidding) {
+            emit BiddingStarted();
+        }
+        if (currentPhase == Phase.Init) {
+            emit AuctionInit();
+        }
     }
 
     function bid(bytes32 blindBid) public payable validPhase(Phase.Bidding) {
-        require(msg.sender != beneficiary,'beneficiaryBid');    // Beneficiary should not be allowed to place bids
+        require(msg.sender != beneficiary,'beneficiaryBid');
         bids[msg.sender] = Bid({blindedBid: blindBid, deposit: msg.value});
     }
 
@@ -70,24 +68,19 @@ contract BlindAuction {
 
         if (bidToCheck.blindedBid == keccak256(abi.encodePacked(value, secret))) {
             refund += bidToCheck.deposit;
-            if (bidToCheck.deposit >= value*1000000000000000000) {
-                if (placeBid(msg.sender, value*1000000000000000000))
-                    refund -= value * 1000000000000000000;
+            if (bidToCheck.deposit >= value * ETH && placeBid(msg.sender, value * ETH)) {
+                refund -= value * ETH;
             }
         }
         msg.sender.transfer(refund);
     }
 
-    // This is an "internal" function which means that it
-    // can only be called from the contract itself (or from
-    // derived contracts).
-    function placeBid(address bidder, uint value) internal returns (bool success)
-    {
+    function placeBid(address bidder, uint value) internal returns (bool success){
         if (value <= highestBid) {
             return false;
         }
+
         if (highestBidder != address(0)) {
-            // Refund the previously highest bidder.
             pendingReturns[highestBidder] += highestBid;
         }
 
@@ -96,7 +89,6 @@ contract BlindAuction {
         return true;
     }
 
-    // Withdraw a non-winning bid
     function withdraw() public {
         uint amount = pendingReturns[msg.sender];
         if (amount > 0) {
@@ -105,8 +97,6 @@ contract BlindAuction {
         }
     }
 
-    // Send the highest bid to the beneficiary and
-    // end the auction
     function auctionEnd() public validPhase(Phase.Done) {
         if(address(this).balance >= highestBid){
             beneficiary.transfer(highestBid);
