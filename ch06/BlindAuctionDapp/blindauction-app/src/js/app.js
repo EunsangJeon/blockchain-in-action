@@ -1,7 +1,7 @@
 App = {
   web3Provider: null,
   contracts: {},
-  names: new Array(),
+  names: [],
   url: 'http://127.0.0.1:7545',
   // network_id: 5777,
   chairPerson: null,
@@ -41,8 +41,7 @@ App = {
   initContract: function () {
     $.getJSON('BlindAuction.json', function (data) {
       // Get the necessary contract artifact file and instantiate it with truffle-contract
-      var voteArtifact = data;
-      App.contracts.vote = TruffleContract(voteArtifact);
+      App.contracts.vote = TruffleContract(data);
       App.contracts.mycontract = data;
       // Set the provider for our contract
       App.contracts.vote.setProvider(App.web3Provider);
@@ -68,7 +67,7 @@ App = {
   populateAddress: function () {
     new Web3(new Web3.providers.HttpProvider(App.url)).eth.getAccounts((err, accounts) => {
       jQuery.each(accounts, function (i) {
-        if (web3.eth.coinbase != accounts[i]) {
+        if (web3.eth.coinbase !== accounts[i]) {
           var optionElement = '<option value="' + accounts[i] + '">' + accounts[i] + '</option';
           jQuery('#enter_address').append(optionElement);
         }
@@ -78,7 +77,7 @@ App = {
 
   getCurrentPhase: function() {
     App.contracts.vote.deployed().then(function(instance) {
-      return instance.currentPhase();
+      return instance.currentPhase({from: App.currentAccount});
     }).then(function(result) {
       App.currentPhase = result;
       var notificationText = App.auctionPhases[App.currentPhase];
@@ -91,13 +90,15 @@ App = {
 
   getChairperson: function() {
     App.contracts.vote.deployed().then(function(instance) {
-      return instance.beneficiary();
+      return instance.beneficiary({from: App.currentAccount});
     }).then(function(result) {
       App.chairPerson = result;
-      if(App.currentAccount == App.chairPerson) {
+      console.log('init chairperson:    ' + App.chairPerson);
+      console.log('init currentAccount: ' + App.currentAccount);
+      console.log('init phase:          ' + App.currentPhase);
+      if(App.currentAccount === App.chairPerson) {
         $(".chairperson").css("display", "inline");
-        $(".img-chairperson").css("width", "100%");
-        $(".img-chairperson").removeClass("col-lg-offset-2");
+        $(".img-chairperson").css("width", "100%").removeClass("col-lg-offset-2");
       } else {
         $(".other-user").css("display", "inline");
       }
@@ -106,12 +107,13 @@ App = {
 
   handlePhase: function (event) {
     App.contracts.vote.deployed().then(function (instance) {
-      return instance.advancePhase();
+      console.log("handlePhase called");
+      return instance.advancePhase({from: App.currentAccount});
     })
       .then(function (result) {
         console.log(result);
         if (result) {
-          if (parseInt(result.receipt.status) == 1) {
+          if (parseInt(result.receipt.status) === 1) {
             if (result.logs.length > 0) {
               App.showNotification(result.logs[0].event);
             }
@@ -119,7 +121,7 @@ App = {
               App.showNotification("AuctionEnded");
             }
             App.contracts.vote.deployed().then(function(latestInstance) {
-              return latestInstance.currentPhase();
+              return latestInstance.currentPhase({from: App.currentAccount});
             }).then(function(result) {
               console.log("This is also working, new phase updated")
               App.currentPhase = result;
@@ -127,14 +129,18 @@ App = {
             return;
           }
           else {
+            console.log("handle phase error 1");
             toastr["error"]("Error in changing to next Event");
           }
         }
         else {
+          console.log("handle phase error 2");
           toastr["error"]("Error in changing to next Event");
         }
       })
       .catch(function (err) {
+        console.log("handle phase err 3");
+        console.log(err);
         toastr["error"]("Error in changing to next Event");
       });
   },
@@ -149,11 +155,11 @@ App = {
       App.contracts.vote.deployed().then(function (instance) {
         bidInstance = instance;
 
-        return bidInstance.bid(bidValue, { value: web3.toWei(msgValue, "ether") });
+        return bidInstance.bid(bidValue, { from: App.currentAccount, value: web3.toWei(msgValue, "ether") });
       }).then(function (result, err) {
         if (result) {
           console.log(result.receipt.status);
-          if (parseInt(result.receipt.status) == 1)
+          if (parseInt(result.receipt.status) === 1)
             toastr.info("Your Bid is Placed!", "", { "iconClass": 'toast-info notification0' });
           else
             toastr["error"]("Error in Bidding. Bidding Reverted!");
@@ -178,11 +184,11 @@ App = {
       App.contracts.vote.deployed().then(function (instance) {
         bidInstance = instance;
 
-        return bidInstance.reveal(parseInt(bidRevealValue), bidRevealSecret);
+        return bidInstance.reveal({from: App.currentAccount}, parseInt(bidRevealValue), bidRevealSecret);
       }).then(function (result, err) {
         if (result) {
           console.log(result.receipt.status);
-          if (parseInt(result.receipt.status) == 1)
+          if (parseInt(result.receipt.status) === 1)
             toastr.info("Your Bid is Revealed!", "", { "iconClass": 'toast-info notification0' });
           else
             toastr["error"]("Error in Revealing. Bidding Reverted!");
@@ -201,7 +207,7 @@ App = {
     var bidInstance;
     App.contracts.vote.deployed().then(function (instance) {
       bidInstance = instance;
-      return bidInstance.auctionEnd();
+      return bidInstance.auctionEnd({from: App.currentAccount});
     }).then(function (res) {
       console.log(res);
       var winner = res.logs[0].args.winner;
@@ -214,11 +220,11 @@ App = {
   },
 
   handleWithdraw: function() {
-    if(App.currentPhase == 3) {
+    if(App.currentPhase === 3) {
       console.log("Inside handleWithdraw")
       App.contracts.vote.deployed().then(function(instance) {
         console.log("Trying to call withdraw with currentAccount: " + App.currentAccount);
-        return instance.withdraw({from: App.currentAccount });
+        return instance.withdraw({from: App.currentAccount});
       }).then(function(result, error) {
         if(result.receipt.status) {
           toastr.info('Your bid has been withdrawn');
@@ -233,10 +239,10 @@ App = {
   },
 
   handleClose: function() {
-    if(App.currentPhase == 3) {
+    if(App.currentPhase === 3) {
       console.log("this worked");
       App.contracts.vote.deployed().then(function(instance) {
-        return instance.closeAuction()
+        return instance.closeAuction({from: App.currentAccount})
       }).then(function(result) {
         if(result.receipt.status) {
           toastr["error"]("Auction is closed!");
