@@ -9,6 +9,7 @@ App = {
     index: 0,
     margin: 10,
     left: 15,
+
     init: function () {
         return App.initWeb3();
     },
@@ -75,7 +76,6 @@ App = {
         const weiamount = App.web3.utils.toWei(amount, 'ether');
         const message = App.constructPaymentMessage(App.contracts.Payment._address, weiamount);
         App.signMessage(message, amount);
-
     },
 
     constructPaymentMessage: function (contractAddress, weiamount) {
@@ -101,7 +101,6 @@ App = {
     },
 
     handleTransfer: function (amount, signedMessage) {
-
         //toHex conversion to support big numbers
         if (App.web3.utils.isHexStrict(signedMessage)) {
             const weiamount = App.web3.utils.toWei(amount, 'ether');
