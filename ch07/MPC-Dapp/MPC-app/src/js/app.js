@@ -47,7 +47,6 @@ App = {
     },
 
     populateAddress: function () {
-
         new Web3(App.url).eth.getAccounts((err, accounts) => {
             if (!err) {
                 App.receiver = accounts[1];
@@ -85,7 +84,9 @@ App = {
     signMessage: function (message, amount) {
         web3.personal.sign(message, web3.eth.defaultAccount, function (err, signedMessage) {
             if (!err) {
-                const box = '<div class="check col-md-12 col-lg-12" style="position:absolute;margin-top:' + App.margin + 'px;z-index:' + App.index + ';left:' + App.left + 'px">' +
+                const box =
+                    '<div class="check col-md-12 col-lg-12" style="position:absolute;margin-top:'
+                    + App.margin + 'px;z-index:' + App.index + ';left:' + App.left + 'px">' +
                     '<span class="amount"><b>' + amount + ' ETH </b></span>' +
                     '<p class="signedMessage">' + signedMessage + '</p>' +
                     '</div>';
