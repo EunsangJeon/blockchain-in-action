@@ -1,10 +1,10 @@
-var express = require('express');
-var app = express();
+const express = require('express');
+const app = express();
 app.use(express.static('src'));
 app.use(express.static('../MPC-contract/build/contracts'));
 app.get('/', function (req, res) {
-  res.render('index.html');
+    res.render('index.html');
 });
 app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
+    console.log('Example app listening on port 3000!');
 });
