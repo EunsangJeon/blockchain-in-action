@@ -1,9 +1,13 @@
 const HDWalletProvider = require('truffle-hdwallet-provider');
-beneficiary='';
+const beneficiary='';
+const url='';
+const devSolc = './node_modules/solc';
+const prdSolc = '0.5.8';
+
 module.exports = {
   networks: {
     ropsten: {
-      provider: () => new HDWalletProvider(beneficiary, ''),
+      provider: () => new HDWalletProvider(beneficiary, url),
       network_id: 3,       
       gas: 5000000,       
       skipDryRun: false
@@ -17,7 +21,7 @@ module.exports = {
 
   compilers: {
     solc: {
-       version: "0.5.8"
+       version: devSolc
     }
   }
 };
