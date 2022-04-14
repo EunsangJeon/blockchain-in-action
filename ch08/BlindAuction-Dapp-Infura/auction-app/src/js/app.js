@@ -41,7 +41,7 @@ App = {
             App.contracts.BlindAuction.setProvider(App.web3Provider);
             App.currentAccount = web3.eth.coinbase; // get current account
             jQuery('#current_account').text(web3.eth.coinbase);
-            jQuery('#contractAddress').text(data.networks[3].address);
+            jQuery('#contractAddress').text(data.networks[5777].address);
             web3.eth.getBalance(web3.eth.coinbase, (b, r) => {
                 jQuery('#balance').text(web3.fromWei(parseInt(r)));
             })
@@ -64,6 +64,7 @@ App = {
             return instance.currentPhase();
         }).then(function (result) {
             App.currentPhase = result.c[0];
+            console.log(App.currentPhase);
             const notificationText = App.auctionPhases[App.currentPhase];
             $('#phase-notification-text').text(notificationText);
         })
@@ -73,6 +74,7 @@ App = {
         App.contracts.BlindAuction.deployed().then(function (instance) {
             return instance.beneficiary();
         }).then(function (result) {
+            console.log(result);
             App.chairPerson = result;
         });
     },
@@ -82,7 +84,7 @@ App = {
             toastr["error"]("Auction ended");
         } else {
             App.contracts.BlindAuction.deployed().then(function (instance) {
-                return instance.advancePhase();
+                return instance.advancePhase({from: App.currentAccount});
             })
                 .then(function (result) {
                     if (result) {
@@ -112,7 +114,7 @@ App = {
     handleClose: function () {
         if (App.currentPhase === '3') {
             App.contracts.BlindAuction.deployed().then(function (instance) {
-                return instance.closeAuction();
+                return instance.closeAuction({from: App.currentAccount});
             })
         } else {
             toastr["error"]("Not in a valid phase to close the auction!");

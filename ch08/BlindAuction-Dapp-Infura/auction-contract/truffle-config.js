@@ -6,16 +6,16 @@ const prdSolc = '0.5.8';
 
 module.exports = {
   networks: {
-    ropsten: {
-      provider: () => new HDWalletProvider(beneficiary, url),
-      network_id: 3,       
-      gas: 5000000,       
-      skipDryRun: false
-    },
+    // ropsten: {
+    //   provider: () => new HDWalletProvider(beneficiary, url),
+    //   network_id: 3,
+    //   gas: 5000000,
+    //   skipDryRun: false
+    // },
     development: {
       host: "localhost",
       port: 7545,
-      network_id: "*" // Match any network id
+      network_id: "5777" // Match any network id
     }
   },
 
