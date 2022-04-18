@@ -1,8 +1,7 @@
 pragma solidity >=0.4.22 <0.6.0;
-// Imagine a big integer counter that the whole world could share
+
 contract Counter {
 
-  //positive value counter
   int value;
 
   constructor() public{

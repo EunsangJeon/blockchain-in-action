@@ -1,30 +1,6 @@
 const Ballot = artifacts.require('../contracts/Ballot.sol')
 const truffleAssert = require('truffle-assertions');
 
-//
-// Mocha is the testing framework (it, describe, beforeEach)
-// Chai is the assertion library used
-// truffle-assertion is used to check the reverts by the contract
-//
-// describe() are:
-// - commonly known as test suites, which contains test cases
-// - merely groups, and you can have groups within groups
-//
-// it() is a test case
-//
-// beforeEach() is a hooks that runs before each it() or describe().
-//
-// Async and Await are extensions of promises
-// An async function can contain an await expression that pauses the execution of
-// the async function and waits for the passed Promise's resolution, and then
-// resumes the async function's execution and returns the resolved value.
-// Remember, the await keyword is only valid inside async functions.
-//
-// Good links to understand Async Await and event proposal -
-// - https://hackernoon.com/understanding-async-await-in-javascript-1d81bb079b2c
-// - https://www.youtube.com/watch?v=XzXIMZMN9k4
-//
-
 contract('Ballot', function (accounts) {
 
   // These are the list of revert responses by the modifiers
