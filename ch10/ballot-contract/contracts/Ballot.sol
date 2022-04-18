@@ -1,4 +1,5 @@
 pragma solidity >=0.4.22 <0.6.0;
+
 contract Ballot {
 
     struct Voter {
@@ -6,28 +7,31 @@ contract Ballot {
         bool voted;
         uint vote;
     }
+
     struct Proposal {
         uint voteCount;
+    }
+
+    enum Phase {
+        Init, Regs, Vote, Done
     }
 
     address chairperson;
     mapping(address => Voter) voters;
     Proposal[] proposals;
-
-    enum Phase {Init, Regs, Vote, Done}
     Phase public state = Phase.Done;
 
-    //modifiers
-   modifier validPhase(Phase reqPhase)
-    { require(state == reqPhase, "Not the required phase");
-      _;
+    modifier validPhase(Phase reqPhase) {
+        require(state == reqPhase, "Not the required phase");
+        _;
     }
-    modifier onlyChair()
-     {require(msg.sender == chairperson, "Only chairperson can perform this operation");
-      _;
-     }
 
-    constructor (uint numProposals) public  {
+    modifier onlyChair() {
+        require(msg.sender == chairperson, "Only chairperson can perform this operation");
+        _;
+    }
+
+    constructor (uint numProposals) public {
         chairperson = msg.sender;
         voters[chairperson].weight = 2; // weight 2 for testing purposes
         proposals.length = numProposals;
@@ -42,13 +46,10 @@ contract Ballot {
     function register(address voter) public validPhase(Phase.Regs) onlyChair {
         require (! voters[voter].voted);
         voters[voter].weight = 1;
-       // voters[voter].voted = false;
     }
 
 
     function vote(uint toProposal) public validPhase(Phase.Vote)  {
-        //Cant not use like this: Voter memory sender = voters[msg.sender];
-        //Changes happen only locally
         require (!voters[msg.sender].voted, "Voter has already voted");
         require (toProposal < proposals.length, "Proposal number over limit");
 
@@ -58,12 +59,13 @@ contract Ballot {
     }
 
     function reqWinner() public validPhase(Phase.Done) view returns (uint winningProposal) {
+        winningProposal = 0;
         uint winningVoteCount = 0;
         for (uint prop = 0; prop < proposals.length; prop++)
             if (proposals[prop].voteCount > winningVoteCount) {
                 winningVoteCount = proposals[prop].voteCount;
                 winningProposal = prop;
             }
-       assert (winningVoteCount>=3);
+        assert (winningVoteCount>=3);
     }
 }
